@@ -153,9 +153,15 @@ class output_template {
 			{ outbuffers_[a].push_back(b); localcounter_[a]--;}
 
 		void remove_flit(long a)
-			{ outbuffers_[a].erase(outbuffers_[a].begin()); 
-			  flit_state_[a].erase(flit_state_[a].begin());
-			  localcounter_[a]++;}
+		{ 
+			Sassert(outbuffers_[a].size() > 0);
+			outbuffers_[a].erase(outbuffers_[a].begin()); 
+			vector<flit_template>(outbuffers_[a]).swap(outbuffers_[a]);
+			//Sassert(flit_state_[a].size() > 0);
+			//flit_state_[a].erase(flit_state_[a].begin());
+			//vector<VC_state_type>(flit_state_[a]).swap(flit_state_[a]);
+			localcounter_[a]++;
+		}
 
 		VC_state_type flit_state(long a) {return flit_state_[a][0];}
 		VC_state_type flit_state(long a) const {return flit_state_[a][0];}
