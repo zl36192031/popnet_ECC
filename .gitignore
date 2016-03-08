@@ -2,6 +2,9 @@
 #.gitignore
 #ignore the .o .a file  
 *.[oa]
+*.out
 *~
 #ignore the popnet file  
 popnet
+
+
