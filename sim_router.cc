@@ -169,18 +169,22 @@ void power_template::power_link_traversal(long in_port, Data_type & read_d)
 		link_traversal_[in_port][i] = read_d[i];
 	}
 }
-
+int i = 0;
 void power_template::power_buffer_write(long in_port, Data_type & write_d)
 {
-	for(long i = 0; i < flit_size_; i ++) {
+  
+ 
+	for( i = 0; i < flit_size_; i ++) {
 		Atom_type old_d = buffer_write_[in_port][i];
 		Atom_type new_d = write_d[i];
 		Atom_type old_d2 = buffer_write_[in_port][i];
 		Atom_type new_d2 = write_d[i];
-		FUNC(SIM_buf_power_data_write, &(router_info_.in_buf_info), 
+      
+        FUNC(SIM_buf_power_data_write, &(router_info_.in_buf_info), 
 			&(router_power_.in_buf), (char *) (&old_d), 
 			(char *) (&old_d),
-			(char *) (&new_d));
+             (char *) (&new_d));
+        
 		buffer_write_[in_port][i] = write_d[i];
 
 	}
