@@ -1,7 +1,7 @@
 POWER_RELEASE = orion_power_beta_mar2003
 CC = g++
 
-CFLAGS = -DS_OUT_DEBUG -Wno-deprecated -O3 -g -DPOWER_TEST -I./$(POWER_RELEASE)/power -I./$(POWER_RELEASE)/library
+CFLAGS =  -DS_OUT_DEBUG -Wno-deprecated  -g -DPOWER_TEST -I./$(POWER_RELEASE)/power -I./$(POWER_RELEASE)/library
 
 LINKFLAGS = -L./$(POWER_RELEASE)/power -lm -lpower 
 .SUFFIXES: .o .cc
