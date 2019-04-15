@@ -7,7 +7,7 @@
 
 using namespace std;
 
-enum mess_type {EVG_, ROUTER_, WIRE_, CREDIT_, DETECT_};
+enum mess_type {EVG_, ROUTER_, WIRE_, CREDIT_, DETECT_, CALCULATE_};
 enum routing_type {XY_ , TXY_ , Adaptive_ };
 enum VC_state_type {INIT_, ROUTING_, VC_AB_, SW_AB_, SW_TR_, HOME_};
 enum flit_type {HEADER_, BODY_, TAIL_};
@@ -21,6 +21,13 @@ typedef pair<long, long> VC_type;
 typedef vector<unsigned long long> Data_type;
 typedef unsigned long long Atom_type;
 const VC_type VC_NULL = VC_type(-1, -1); 
+
+typedef struct{
+    add_type src;
+    add_type des;
+    int res;
+}record_type;
+
 #define BUFF_BOUND_ 100
 #define WIRE_DELAY_ 0.9
 #define PIPE_DELAY_ 1.0

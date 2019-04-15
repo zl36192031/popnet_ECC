@@ -32,6 +32,9 @@ extern long local_switch;
 extern bool detection_open;
 extern long total_detection;
 
+extern double HT_probability[9][9];
+extern vector<record_type> detection_record;
+
 // *****************************************************//
 // data structure to model the structure and behavior   //
 // of routers.                                          //

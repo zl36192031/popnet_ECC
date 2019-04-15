@@ -54,7 +54,13 @@ sim_foundation::sim_foundation():
 	}
 	init_file();
 }
-
+void sim_foundation::probability_init(){
+	for(int i=0;i<9;i++){
+		for(int j=0;j<9;j++){
+			HT_probability[i][j] == 0.01;
+		}
+	}
+}
 //***************************************************************************//
 void sim_foundation::init_file()
 {
@@ -69,8 +75,10 @@ void sim_foundation::init_file()
 						event_time_t, EVG_));
 	if(detection_open){
 		mess_queue::wm_pointer().add_message(mess_event(event_time_t, DETECT_));
+		sim_foundation::probability_init();
 	}
 }
+
 //***************************************************************************//
 ostream& operator<<(ostream& os, const sim_foundation& sf)
 {
@@ -191,15 +199,21 @@ void sim_foundation::receive_CREDIT_message(mess_event mesg)
 //detection message 
 void sim_foundation::receive_DETECT_message(mess_event mesg)
 {
+	srand((unsigned)time(NULL));
 	add_type des_t;
-	des_t.push_back(1);
-	des_t.push_back(1);
+	des_t.push_back(rand()%9);
+	des_t.push_back(rand()%9);
 	add_type src_t;
-	src_t.push_back(7);
-	src_t.push_back(7);
+	src_t.push_back(rand()%9);
+	src_t.push_back(rand()%9);
 	long pack_size_t = 3;
 	time_type time_t = mesg.event_start()+5;
 	router(src_t).receive_detect_packet(src_t,des_t,time_t,pack_size_t);
+	record_type rec;
+	rec.des = des_t;
+	rec.src = src_t;
+	rec.res = 0;
+	detection_record.push_back(rec);
 	time_t += 5;
 	mess_queue::wm_pointer().add_message(mess_event(time_t, DETECT_));
 }
@@ -257,6 +271,7 @@ void sim_foundation::simulation_results()
 	cout<<"local average delay:	"<<local_delay[2][2]/local_count[2][2]<<endl;
 	cout<<"others average delay:"<<(total_delay-local_delay[2][2])/(tot_f_t-local_count[2][2])<<endl;
 	cout<<"total detection incoming:"<<total_detection<<endl;
+	cout<<"detection record count:"<<detection_record.size()<<endl;
 	cout<<"**************************************************"<<endl;
 }
 

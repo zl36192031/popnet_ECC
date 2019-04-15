@@ -73,8 +73,21 @@ double local_delay[9][9] = {
 			{0,0,0,0,0,0,0,0,0}};
 long local_switch = 1;
 
-bool detection_open = false;
+bool detection_open = true;
 long total_detection = 0;
+
+double HT_probability[9][9] = {
+			{0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0}};
+
+vector<record_type> detection_record;
 
 ostream & operator<<(ostream& os, const sim_router_template & sr) 
 {

@@ -185,8 +185,8 @@ if __name__ == '__main__':
     res = read_bench('bench')
     #result = change_bench_flit(res,5)
     #result = create_random_trace(8000,2,1)
-    result = change_bench_local_incoming(res,128000,5,1,2,2)
-    #result = create_bench_all_local(4000,256,1)
+    #result = change_bench_local_incoming(res,128000,5,1,2,2)
+    result = create_bench_all_local(4000,256,1)
     writefile(result)
 # execcd 
 #/path/to/dir$ sh rebench.sh

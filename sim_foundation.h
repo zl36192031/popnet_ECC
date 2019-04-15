@@ -72,5 +72,7 @@ class sim_foundation {
 
 		void init_file();
 
+		void probability_init();
+
 };
 #endif
