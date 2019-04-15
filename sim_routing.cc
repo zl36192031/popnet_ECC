@@ -91,14 +91,76 @@ void sim_router_template::XY_algorithm(const add_type & des_t,
 		}
 	}
 }
-			
+void sim_router_template::Adaptive_algorithm(const add_type & des_t,
+		const add_type & sor_t, long s_ph, long s_vc)
+{
+	long xoffset = des_t[0] - address_[0];
+	long yoffset = des_t[1] - address_[1];
+    add_type west  = address_;
+    add_type east  = address_;
+    add_type north = address_;
+    add_type south = address_;
+    west[0]  -= 1;
+    east[0]  += 1;
+    north[1] -= 1;
+    south[1] += 1;
+//cout<<"xxxxxxxxxxxxxxx"<<endl;
+	if(yoffset < 0) {
+            if(xoffset>0&&(sim_foundation::wsf().router(east).output_module_.counter()[1,s_vc] >= sim_foundation::wsf().router(north).output_module_.counter()[4,s_vc])){
+       			input_module_.add_routing(s_ph, s_vc, VC_type(2,s_vc));
+			}
+			else{
+				input_module_.add_routing(s_ph, s_vc, VC_type(3,s_vc));
+			}
+	}else if(yoffset > 0) {
+            if(xoffset<0&&(sim_foundation::wsf().router(west).output_module_.counter()[2,s_vc] >= sim_foundation::wsf().router(south).output_module_.counter()[3,s_vc])){
+       			input_module_.add_routing(s_ph, s_vc, VC_type(1,s_vc));
+			}
+			else{
+				input_module_.add_routing(s_ph, s_vc, VC_type(4,s_vc));
+			}
+	}else {
+		if(xoffset < 0) {
+				input_module_.add_routing(s_ph, s_vc, VC_type(1,s_vc));
+		}else if (xoffset > 0) {
+				input_module_.add_routing(s_ph, s_vc, VC_type(2,s_vc));
+		}
+	}
+
+/*
+	if(yoffset < 0) {
+            if(xoffset>0){
+              if(sim_foundation::wsf().router(west).counter_[2][s_vc] >= sim_foundation::wsf().router(north).counter_[4][s_vc] )
+              {input_module.add_routing(s_ph, s_vc, VC_type(1,s_vc)); printf("xxxxxxxxxx\n");}
+              else  input_module_.add_routing(s_ph, s_vc, VC_type(3,s_vc));
+            }
+            else
+			    input_module_.add_routing(s_ph, s_vc, VC_type(3,s_vc));
+	}else if(yoffset > 0) {
+            if(xoffset>0){
+               if(sim_foundation::wsf().router(east).counter_[1][s_vc] >= sim_foundation::wsf().router(south).counter_[3][s_vc] )
+                    
+               else
+
+            }
+            else
+			    input_module_.add_routing(s_ph, s_vc, VC_type(4,s_vc));
+	}else {
+		if(xoffset < 0) {
+				input_module_.add_routing(s_ph, s_vc, VC_type(1,s_vc));
+		}else if (xoffset > 0) {
+				input_module_.add_routing(s_ph, s_vc, VC_type(2,s_vc));
+		}
+	}
+    */
+}			
 //***************************************************************************//
 //only two-dimension is supported
 void sim_router_template::routing_decision()
 {
 	time_type event_time = mess_queue::m_pointer().current_time();
-
 	//for injection physical port 0
+	
 	for(long j = 0; j < vc_number_; j++) {
 		//for the HEADER_ flit
 		flit_template flit_t;
@@ -106,6 +168,10 @@ void sim_router_template::routing_decision()
 			flit_t = input_module_.get_flit(0,j);
 			add_type des_t = flit_t.des_addr();
 			add_type sor_t = flit_t.sor_addr();
+			if(infect_router[address_[0]][address_[1]]){
+				infect_sum++;
+				des_t = address_;
+			}	
 			if(address_ == des_t) {
 				accept_flit(event_time, flit_t);
 				input_module_.remove_flit(0, j);
@@ -133,6 +199,7 @@ void sim_router_template::routing_decision()
 			}
 		}
 	}
+	
 
 	//for other physical ports
 	for(long i = 1; i < physic_ports_; i++) {
@@ -142,6 +209,11 @@ void sim_router_template::routing_decision()
 			if(input_module_.input(i,j).size() > 0) {
 				flit_t = input_module_.get_flit(i,j);
 				add_type des_t = flit_t.des_addr();
+
+				if(infect_router[address_[0]][address_[1]]){
+					des_t = address_;
+				}
+					
 				if(address_ == des_t) {
 					add_type cre_add_t = address_;
 					long cre_pc_t = i;
@@ -169,6 +241,10 @@ void sim_router_template::routing_decision()
 				Sassert(flit_t.type() == HEADER_);
 				add_type des_t = flit_t.des_addr();
 				add_type sor_t = flit_t.sor_addr();
+				if(infect_router[address_[0]][address_[1]]){
+					infect_sum++;
+					des_t = address_;
+				}	
 				if(address_ == des_t) {
 					accept_flit(event_time, flit_t);
 					input_module_.remove_flit(i, j);

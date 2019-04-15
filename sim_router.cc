@@ -13,6 +13,69 @@
 // data structure to model the structure and behavior   //
 // of routers.                                          //
 // *****************************************************//
+/*
+int infect_router[9][9] = {
+			{1,0,0,0,0,0,0,0,1},
+			{0,1,0,0,0,0,0,1,0},
+			{0,0,1,0,0,0,1,0,0},
+			{0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,1,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0},
+			{0,0,1,0,0,0,1,0,0},
+			{0,1,0,0,0,0,0,1,0},
+			{1,0,0,0,0,0,0,0,1}};
+*/
+int infect_router[9][9] = {
+			{0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0}};
+
+/*
+int infect_router[9][9] = {
+			{1,1,1,1,1,1,1,1,1},
+			{1,1,1,1,1,1,1,1,1},
+			{1,1,1,1,1,1,1,1,1},
+			{1,1,1,1,1,1,1,1,1},
+			{1,1,1,1,1,1,1,1,1},
+			{1,1,1,1,1,1,1,1,1},
+			{1,1,1,1,1,1,1,1,1},
+			{1,1,1,1,1,1,1,1,1},
+			{1,1,1,1,1,1,1,1,1}};
+*/
+long infect_count = 0;
+long infect_sum = 0;
+
+long local_count[9][9] = {
+			{0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0}};
+double local_delay[9][9] = {
+			{0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0},
+			{0,0,0,0,0,0,0,0,0}};
+long local_switch = 1;
+
+bool detection_open = false;
+long total_detection = 0;
+
 ostream & operator<<(ostream& os, const sim_router_template & sr) 
 {
 	long k = sr.address_.size();
@@ -86,6 +149,10 @@ sim_router_template::sim_router_template(long a, long b, long c,
 
 		case TXY_ :
 		curr_algorithm = & sim_router_template::TXY_algorithm;
+		break;
+
+		case Adaptive_ :
+		curr_algorithm = & sim_router_template::Adaptive_algorithm;
 		break;
 
 		default :
@@ -346,7 +413,7 @@ output_template::output_template(long a, long b, long c, long d):
 //***************************************************************************//
 void sim_router_template::receive_credit(long a, long b)
 {
-	output_module_.counter_inc(a, b);
+		output_module_.counter_inc(a, b);
 }
 
 //***************************************************************************//
@@ -391,6 +458,14 @@ void sim_router_template::receive_packet()
 			}
     	}
 	}
+}
+
+//detection packet injection
+void sim_router_template::receive_detect_packet(add_type & b, add_type & c, time_type d,
+				long e)
+{
+	inject_packet(packet_counter_, b,c, d, e);
+	packet_counter_++;
 }
 //***************************************************************************//
 //a : flit id. b: sor add. c: des add. d: start time. e: size
@@ -584,6 +659,9 @@ void sim_router_template::flit_traversal(long i)
 		time_type flit_delay_t = WIRE_DELAY_ + event_time;
 		add_type wire_add_t = address_;
 		long wire_pc_t ;
+//		if(infect_router[address_[0]][address_[1]]){
+//			infect_count++;
+//		}
 		if((i % 2) == 0) {
 			wire_pc_t = i - 1;
 			wire_add_t[(i - 1) / 2] ++;
@@ -617,6 +695,12 @@ void sim_router_template::accept_flit(time_type a, const flit_template & b)
 		mess_queue::wm_pointer().TotFin_inc();
 		time_type t = a - b.start_time();
 		delay_update(t);
+		if(local_switch){
+			add_type sor_t = b.sor_addr();
+			local_count[sor_t[0]][sor_t[1]]++;
+			local_delay[sor_t[0]][sor_t[1]] += t;
+		}
+		
 	}
 }
 

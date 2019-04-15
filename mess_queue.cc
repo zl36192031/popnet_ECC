@@ -66,6 +66,10 @@ void mess_queue::simulator() {
 				sim_foundation::wsf().receive_CREDIT_message(current_message);
 			break;
 
+			case DETECT_:
+				sim_foundation::wsf().receive_DETECT_message(current_message);
+				total_detection ++;
+			break;
 			default:
 				throw pro_error(mess_error_);
 			break;

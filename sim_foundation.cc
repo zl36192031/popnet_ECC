@@ -67,6 +67,9 @@ void sim_foundation::init_file()
 	inFile_ >> event_time_t;
 	mess_queue::wm_pointer().add_message(mess_event(
 						event_time_t, EVG_));
+	if(detection_open){
+		mess_queue::wm_pointer().add_message(mess_event(event_time_t, DETECT_));
+	}
 }
 //***************************************************************************//
 ostream& operator<<(ostream& os, const sim_foundation& sf)
@@ -185,6 +188,23 @@ void sim_foundation::receive_CREDIT_message(mess_event mesg)
 }
 
 //***************************************************************************//
+//detection message 
+void sim_foundation::receive_DETECT_message(mess_event mesg)
+{
+	add_type des_t;
+	des_t.push_back(1);
+	des_t.push_back(1);
+	add_type src_t;
+	src_t.push_back(7);
+	src_t.push_back(7);
+	long pack_size_t = 3;
+	time_type time_t = mesg.event_start()+5;
+	router(src_t).receive_detect_packet(src_t,des_t,time_t,pack_size_t);
+	time_t += 5;
+	mess_queue::wm_pointer().add_message(mess_event(time_t, DETECT_));
+}
+
+//***************************************************************************//
 void sim_foundation::simulation_results()
 {
 	vector<sim_router_template>::const_iterator first = 
@@ -196,6 +216,7 @@ void sim_foundation::simulation_results()
 	first = inter_network_.begin();
 	for(; first != last; first++) {
 		total_delay += first->total_delay();
+		//cout<<first->total_delay()<<endl;
 	}
 	long tot_f_t = mess_queue::wm_pointer().total_finished();
 
@@ -232,6 +253,10 @@ void sim_foundation::simulation_results()
 	cout<<"total arbiter power:  "<<total_arbiter_power * POWER_NOM_<<endl;
 	cout<<"total link power:     "<<total_link_power * POWER_NOM_<<endl;
 	cout<<"total power:          "<<total_power * POWER_NOM_<<endl;
+	//cout<<"infect sum:	"<<infect_sum<<endl;
+	cout<<"local average delay:	"<<local_delay[2][2]/local_count[2][2]<<endl;
+	cout<<"others average delay:"<<(total_delay-local_delay[2][2])/(tot_f_t-local_count[2][2])<<endl;
+	cout<<"total detection incoming:"<<total_detection<<endl;
 	cout<<"**************************************************"<<endl;
 }
 

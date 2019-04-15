@@ -21,6 +21,17 @@ extern "C" {
 #include "SIM_power_router.h"
 }
 
+extern int infect_router[9][9];
+extern long infect_count;
+extern long infect_sum;
+
+extern long local_count[9][9];
+extern double local_delay[9][9];
+extern long local_switch;
+
+extern bool detection_open;
+extern long total_detection;
+
 // *****************************************************//
 // data structure to model the structure and behavior   //
 // of routers.                                          //
@@ -309,10 +320,15 @@ class sim_router_template {
 				long e);
 		void receive_flit(long a, long b, flit_template & c);
 
+		void receive_detect_packet(add_type & b, add_type & c, time_type d,
+				long e);
+
 		void routing_decision();
 		void XY_algorithm(const add_type & des_t, const add_type & sor_t, 
 				long s_ph, long s_vc);
 		void TXY_algorithm(const add_type & des_t, 
+				const add_type & sor_t, long s_ph, long s_vc);
+		void Adaptive_algorithm(const add_type & des_t, 
 				const add_type & sor_t, long s_ph, long s_vc);
 
 		VC_type vc_selection(long a, long b);

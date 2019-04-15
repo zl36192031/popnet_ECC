@@ -17,6 +17,7 @@ class flit_template {
 		time_type start_time_;
 		time_type finish_time_;
 		Data_type data_;
+		
 	
 	public:
 		long flit_id() {return flit_id_;}

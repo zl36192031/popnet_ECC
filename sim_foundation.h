@@ -63,7 +63,8 @@ class sim_foundation {
 		void receive_ROUTER_message(mess_event mesg);
 		void receive_WIRE_message(mess_event mesg);
 		void receive_CREDIT_message(mess_event mesg);
-
+		//detection message
+		void receive_DETECT_message(mess_event mesg);
 		void router_power_exchange();
 		
 		void simulation_results();
