@@ -57,7 +57,7 @@ sim_foundation::sim_foundation():
 void sim_foundation::probability_init(){
 	for(int i=0;i<9;i++){
 		for(int j=0;j<9;j++){
-			HT_probability[i][j] == 0.01;
+			HT_probability[i][j] = 0.01;
 		}
 	}
 }
@@ -74,8 +74,10 @@ void sim_foundation::init_file()
 	mess_queue::wm_pointer().add_message(mess_event(
 						event_time_t, EVG_));
 	if(detection_open){
+		srand((unsigned)time(0));
 		mess_queue::wm_pointer().add_message(mess_event(event_time_t, DETECT_));
 		sim_foundation::probability_init();
+		mess_queue::wm_pointer().add_message(mess_event(1000, CALCULATE_));
 	}
 }
 
@@ -199,7 +201,6 @@ void sim_foundation::receive_CREDIT_message(mess_event mesg)
 //detection message 
 void sim_foundation::receive_DETECT_message(mess_event mesg)
 {
-	srand((unsigned)time(NULL));
 	add_type des_t;
 	des_t.push_back(rand()%9);
 	des_t.push_back(rand()%9);
@@ -207,7 +208,7 @@ void sim_foundation::receive_DETECT_message(mess_event mesg)
 	src_t.push_back(rand()%9);
 	src_t.push_back(rand()%9);
 	long pack_size_t = 3;
-	time_type time_t = mesg.event_start()+5;
+	time_type time_t = mesg.event_start()+100;
 	router(src_t).receive_detect_packet(src_t,des_t,time_t,pack_size_t);
 	record_type rec;
 	rec.des = des_t;
@@ -216,6 +217,114 @@ void sim_foundation::receive_DETECT_message(mess_event mesg)
 	detection_record.push_back(rec);
 	time_t += 5;
 	mess_queue::wm_pointer().add_message(mess_event(time_t, DETECT_));
+}
+
+void sim_foundation::receive_CALCULATE_message(mess_event mesg)
+{
+	//calculation
+	vector<add_type> nodes;
+	long dx,dy;
+	for(int i=0;i<detection_record.size();i++){
+		//path's nodes and detection result calculation
+		nodes = sim_foundation::getNodesByRecord(detection_record[i]);
+		//probability calculation and update
+		sim_foundation::updateProbability(nodes,detection_record[i].res);
+
+	}
+
+	//probability calculation
+
+	//record and caculation output
+	static int cyc = 0;
+	ofstream recordFile;
+	if(cyc==0){recordFile.open("./record/detection1.txt",ios::out|ios::trunc);} 
+	else {recordFile.open("./record/detection1.txt",ios::app);}
+	cout<<endl;
+	recordFile<<"Now cycle time is "<<mesg.event_start()<<endl;
+	recordFile<<"calculation cycle "<<cyc++<<":"<<endl;
+	for(int i=0;i<detection_record.size();i++){
+		recordFile<<detection_record[i].src[0]<<" ";
+		recordFile<<detection_record[i].src[1]<<" ";
+		recordFile<<detection_record[i].des[0]<<" ";
+		recordFile<<detection_record[i].des[1]<<" ";
+		recordFile<<detection_record[i].res<<endl;
+	}
+	detection_record.clear();
+	recordFile<<"HT probability: "<<endl;
+	for(int i=0;i<9;i++){
+		for(int j=0;j<9;j++){
+			recordFile<<HT_probability[i][j]<<" ";
+		}
+		recordFile<<endl;
+	}
+	recordFile.close();
+	
+	time_type time_t = mesg.event_start()+1000;
+	mess_queue::wm_pointer().add_message(mess_event(time_t, CALCULATE_));
+	
+
+}
+
+vector<add_type> sim_foundation::getNodesByRecord(record_type &record)
+{
+	vector<add_type> resv;
+	add_type res;
+	long dx = record.des[0] - record.src[0];
+	long fx = dx/abs(dx);
+	long dy = record.des[1] - record.src[1];
+	long fy = dy/abs(dy);
+	for(long i=record.src[0];i!=record.des[0];i+=fx){
+		res.push_back(i);
+		res.push_back(record.src[1]);
+		resv.push_back(res);
+		if(infect_router[record.src[1]][i]){
+			record.res = 1;
+		};
+		res.clear();
+	}
+	res.push_back(record.des[0]);
+	res.push_back(record.src[1]);
+	resv.push_back(res);
+	if(infect_router[record.src[1]][record.des[0]]){
+		record.res = 1;
+	};
+	res.clear();
+	for(long i=record.src[1];i!=record.des[1];i+=fy){
+		res.push_back(record.des[0]);
+		res.push_back(i);
+		resv.push_back(res);
+		if(infect_router[i][record.des[0]]){
+			record.res = 1;
+		};
+		res.clear();
+	}
+	res.push_back(record.des[0]);
+	res.push_back(record.des[1]);
+	resv.push_back(res);
+	if(infect_router[record.des[1]][record.des[0]]){
+		record.res = 1;
+	};
+	res.clear();
+	return resv;
+}
+
+void sim_foundation::updateProbability(vector<add_type> nodes, long res)
+{
+	double Pb_a,Pb_na;
+	if(res == 1){
+		Pb_a = 0.8;
+		Pb_na = 0.3;
+	}else{
+		Pb_a = 0.1;
+		Pb_na = 0.8;
+	}
+	add_type tmp;
+	for(int i=0;i<nodes.size();i++){
+		tmp = nodes[i];
+		HT_probability[tmp[1]][tmp[0]] = HT_probability[tmp[1]][tmp[0]]*Pb_a/(HT_probability[tmp[1]][tmp[0]]*Pb_a+(1.0-HT_probability[tmp[1]][tmp[0]])*Pb_na);
+		if(HT_probability[tmp[1]][tmp[0]]<0.00001) HT_probability[tmp[1]][tmp[0]] = 0.00001;
+		//if(HT_probability[tmp[1]][tmp[0]]==1) HT_probability[tmp[1]][tmp[0]] = 0.999;
+	}
 }
 
 //***************************************************************************//
@@ -267,11 +376,11 @@ void sim_foundation::simulation_results()
 	cout<<"total arbiter power:  "<<total_arbiter_power * POWER_NOM_<<endl;
 	cout<<"total link power:     "<<total_link_power * POWER_NOM_<<endl;
 	cout<<"total power:          "<<total_power * POWER_NOM_<<endl;
-	//cout<<"infect sum:	"<<infect_sum<<endl;
-	cout<<"local average delay:	"<<local_delay[2][2]/local_count[2][2]<<endl;
-	cout<<"others average delay:"<<(total_delay-local_delay[2][2])/(tot_f_t-local_count[2][2])<<endl;
+	cout<<"infect sum:	"<<infect_sum<<endl;
+	//cout<<"local average delay:	"<<local_delay[2][2]/local_count[2][2]<<endl;
+	//cout<<"others average delay:"<<(total_delay-local_delay[2][2])/(tot_f_t-local_count[2][2])<<endl;
 	cout<<"total detection incoming:"<<total_detection<<endl;
-	cout<<"detection record count:"<<detection_record.size()<<endl;
+	//cout<<"detection record count:"<<detection_record.size()<<endl;
 	cout<<"**************************************************"<<endl;
 }
 

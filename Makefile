@@ -16,7 +16,7 @@ SIM_SRCS = SString.cc SStd.cc SRGen.cc configuration.cc flit.cc sim_router.cc si
 SIM_OBJS = $(SIM_SRCS:.cc=.o)
 
 $(TARGET):$(SIM_OBJS) $(PTARGET) 
-	$(CC) -o popnet $(SIM_OBJS) $(LINKFLAGS)
+	$(CC) -o popnet $(SIM_OBJS) $(LINKFLAGS) -std=c++11
 
 $(PTARGET):
 	cd ./$(POWER_RELEASE)/power; $(MAKE)

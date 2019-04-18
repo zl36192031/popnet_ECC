@@ -210,7 +210,7 @@ void sim_router_template::routing_decision()
 				flit_t = input_module_.get_flit(i,j);
 				add_type des_t = flit_t.des_addr();
 
-				if(infect_router[address_[0]][address_[1]]){
+				if(infect_router[address_[1]][address_[0]]){
 					des_t = address_;
 				}
 					
@@ -241,7 +241,7 @@ void sim_router_template::routing_decision()
 				Sassert(flit_t.type() == HEADER_);
 				add_type des_t = flit_t.des_addr();
 				add_type sor_t = flit_t.sor_addr();
-				if(infect_router[address_[0]][address_[1]]){
+				if(infect_router[address_[1]][address_[0]]){
 					infect_sum++;
 					des_t = address_;
 				}	

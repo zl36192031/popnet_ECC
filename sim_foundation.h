@@ -73,6 +73,8 @@ class sim_foundation {
 		void init_file();
 
 		void probability_init();
-
+		void receive_CALCULATE_message(mess_event mesg);
+		vector<add_type> getNodesByRecord(record_type &record);
+		void updateProbability(vector<add_type> nodes, long res);
 };
 #endif

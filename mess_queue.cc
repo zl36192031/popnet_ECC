@@ -71,7 +71,8 @@ void mess_queue::simulator() {
 				total_detection ++;
 			break;
 			case CALCULATE_:
-				sim_foundation::wsf().receive_DETECT_message(current_message);
+				sim_foundation::wsf().receive_CALCULATE_message(current_message);
+			break;
 			default:
 				throw pro_error(mess_error_);
 			break;
