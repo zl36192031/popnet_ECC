@@ -1,2 +1,2 @@
 #!/bin/bash
-./popnet -A 9 -c 2 -V 3 -B 12 -O 12 -F 4 -L 1000 -T 1200000 -r 1 -I ./throughput_trace/bench -R 1
+./popnet -A 9 -c 2 -V 3 -B 12 -O 12 -F 4 -L 1000 -T 320000 -r 1 -I ./throughput_trace/bench -R 1

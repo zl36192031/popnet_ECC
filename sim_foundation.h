@@ -76,5 +76,6 @@ class sim_foundation {
 		void receive_CALCULATE_message(mess_event mesg);
 		vector<add_type> getNodesByRecord(record_type &record);
 		void updateProbability(vector<add_type> nodes, long res);
+		vector<double> getDetectionEffect();
 };
 #endif

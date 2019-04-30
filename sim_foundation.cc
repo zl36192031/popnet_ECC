@@ -239,7 +239,10 @@ void sim_foundation::receive_CALCULATE_message(mess_event mesg)
 	ofstream recordFile;
 	if(cyc==0){recordFile.open("./record/detection1.txt",ios::out|ios::trunc);} 
 	else {recordFile.open("./record/detection1.txt",ios::app);}
-	cout<<endl;
+	ofstream recordFile2;
+	if(cyc==0){recordFile2.open("./record/detection2.txt",ios::out|ios::trunc);} 
+	else {recordFile2.open("./record/detection2.txt",ios::app);}
+	//record
 	recordFile<<"Now cycle time is "<<mesg.event_start()<<endl;
 	recordFile<<"calculation cycle "<<cyc++<<":"<<endl;
 	for(int i=0;i<detection_record.size();i++){
@@ -250,6 +253,7 @@ void sim_foundation::receive_CALCULATE_message(mess_event mesg)
 		recordFile<<detection_record[i].res<<endl;
 	}
 	detection_record.clear();
+	//HT probability
 	recordFile<<"HT probability: "<<endl;
 	for(int i=0;i<9;i++){
 		for(int j=0;j<9;j++){
@@ -257,9 +261,18 @@ void sim_foundation::receive_CALCULATE_message(mess_event mesg)
 		}
 		recordFile<<endl;
 	}
+	//HT-judgement rate and disjudgement rate
+	vector<double> detection_effect;
+	detection_effect = sim_foundation::getDetectionEffect();
+	recordFile2<<cyc<<" ";
+	recordFile2<<total_detection<<" ";
+	recordFile2<<detection_effect[0]<<" ";
+	recordFile2<<detection_effect[1]<<endl;
+
 	recordFile.close();
+	recordFile2.close();
 	
-	time_type time_t = mesg.event_start()+1000;
+	time_type time_t = mesg.event_start()+5000;
 	mess_queue::wm_pointer().add_message(mess_event(time_t, CALCULATE_));
 	
 
@@ -312,8 +325,8 @@ void sim_foundation::updateProbability(vector<add_type> nodes, long res)
 {
 	double Pb_a,Pb_na;
 	if(res == 1){
-		Pb_a = 0.8;
-		Pb_na = 0.3;
+		Pb_a = 0.7;
+		Pb_na = 0.5;
 	}else{
 		Pb_a = 0.1;
 		Pb_na = 0.8;
@@ -323,10 +336,33 @@ void sim_foundation::updateProbability(vector<add_type> nodes, long res)
 		tmp = nodes[i];
 		HT_probability[tmp[1]][tmp[0]] = HT_probability[tmp[1]][tmp[0]]*Pb_a/(HT_probability[tmp[1]][tmp[0]]*Pb_a+(1.0-HT_probability[tmp[1]][tmp[0]])*Pb_na);
 		if(HT_probability[tmp[1]][tmp[0]]<0.00001) HT_probability[tmp[1]][tmp[0]] = 0.00001;
-		//if(HT_probability[tmp[1]][tmp[0]]==1) HT_probability[tmp[1]][tmp[0]] = 0.999;
+		if(HT_probability[tmp[1]][tmp[0]]>0.9) HT_probability[tmp[1]][tmp[0]] = 0.9;
 	}
 }
 
+vector<double> sim_foundation::getDetectionEffect()
+{
+	double HTtol, nortol,judnum,disjudnum;
+	double HTjudr,disjudr;
+	for(int i=0;i<9;i++){
+		for(int j=0;j<9;j++){
+			if(infect_router[i][j]==1){
+				HTtol++;
+				if(HT_probability[i][j]>=0.8)judnum++;
+			}
+			if(infect_router[i][j]==0){
+				nortol++;
+				if(HT_probability[i][j]>=0.8)disjudnum++;
+			}
+		}
+	}
+	HTjudr = judnum/HTtol;
+	disjudr = disjudnum/nortol;
+	vector<double> res;
+	res.push_back(HTjudr);
+	res.push_back(disjudr);
+	return res;
+}
 //***************************************************************************//
 void sim_foundation::simulation_results()
 {
